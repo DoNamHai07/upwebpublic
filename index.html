@@ -1,69 +1,450 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bai3</title>
+    <title>Ôn Tập CSDL - Flashcard</title>
+    <style>
+        :root {
+            --primary: #4257b2;
+            --primary-hover: #3b4c9b;
+            --bg: #f6f7fb;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-top: 30px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid var(--primary);
+            background-color: transparent;
+            color: var(--primary);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Flashcard */
+        .flashcard-container {
+            width: 90%;
+            max-width: 700px;
+            height: 400px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            /* Đã chỉnh tốc độ lật thẻ thành 0.5s theo yêu cầu */
+            transition: transform 0.5s ease-in-out; 
+            transform-style: preserve-3d;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateX(180deg);
+        }
+
+        .card-face {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.6;
+            overflow-y: auto;
+        }
+
+        .card-front {
+            /* Mặt trước */
+        }
+
+        .card-back {
+            transform: rotateX(180deg);
+            color: #1a73e8;
+        }
+
+        .card-face::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card-face::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+
+        /* Controls */
+        .controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .ctrl-btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .ctrl-btn:hover {
+            background-color: #eee;
+        }
+        
+        .btn-random {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+        }
+        
+        .btn-random:hover {
+            background-color: #f57c00;
+        }
+
+        .progress {
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #d63384;
+        }
+        ul.options-list {
+            text-align: left;
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+        ul.options-list li {
+            margin-bottom: 8px;
+        }
+    </style>
 </head>
 <body>
 
-    <header>
-<h1><b>About Victoria Kirst</b></h1>
-<p>My name is Victoria and i am <b>jolly, clumsy </b>and <b>four-eyed</b></p>
-<hr>
-    </header>
+    <h1>Ôn Tập CSDL - Flashcard</h1>
 
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchCategory('theory')">Lý thuyết</button>
+        <button class="tab-btn" onclick="switchCategory('practice')">Thực hành</button>
+    </div>
 
+    <div class="flashcard-container" onclick="flipCard()">
+        <div class="flashcard" id="flashcard">
+            <div class="card-face card-front" id="card-front">
+                <!-- Nội dung câu hỏi -->
+            </div>
+            <div class="card-face card-back" id="card-back">
+                <!-- Nội dung đáp án -->
+            </div>
+        </div>
+    </div>
 
-    <main>
-<h2><b>My classes this quarter</b></h2>
-<ul>
-    <li>CSE 451 - Operating Systems</li>
-    <li>CSE 471 - Computer design and organization</li>
-    <li>PHYS 121 - physics - mechanics</li>
-    <li>CSE 498 - Research w/Prof. Luis Ceze</li>
-</ul>
+    <div class="controls-wrapper">
+        <div class="controls">
+            <button class="ctrl-btn" onclick="prevCard()">&#8592; Trước</button>
+            <div class="progress" id="progress">1 / 10</div>
+            <button class="ctrl-btn" onclick="nextCard()">Tiếp &#8594;</button>
+        </div>
+        <!-- Nút Random thủ công -->
+        <button class="ctrl-btn btn-random" onclick="randomizeDeck()">🔀 Xáo trộn thẻ</button>
+    </div>
 
+    <script>
+        // MẢNG LÝ THUYẾT (32 CÂU)
+        const theoryItems = [
+            { q: "Một công ty quản lý các dự án. Mỗi nhân viên có thể tham gia nhiều dự án, và mỗi dự án có nhiều nhân viên tham gia. Mỗi nhân viên chỉ thuộc về một phòng ban duy nhất. Mỗi phòng ban có nhiều nhân viên.<br><strong>Thông tin cần quản lý:</strong><br>- NHANVIEN(<u>MaNV</u>, HoTen, NgaySinh)<br>- PHONGBAN(<u>MaPB</u>, TenPB)<br>- DUAN(<u>MaDA</u>, TenDA, NgayBatDau)<br><strong>Yêu cầu:</strong><br>a) Vẽ sơ đồ thực thể liên kết (ERD).<br>b) Chuyển đổi sang mô hình quan hệ.", a: "<strong>a) Mô hình ERD:</strong><br>- Mối quan hệ 1-N giữa PHONGBAN và NHANVIEN (Một phòng ban có nhiều nhân viên).<br>- Mối quan hệ N-M giữa NHANVIEN và DUAN (Một nhân viên làm nhiều dự án, một dự án có nhiều nhân viên).<br><br><strong>b) Mô hình quan hệ:</strong><br>- PHONGBAN(<u>MaPB</u>, TenPB)<br>- NHANVIEN(<u>MaNV</u>, HoTen, NgaySinh, MaPB)<br>- DUAN(<u>MaDA</u>, TenDA, NgayBatDau)<br>- THAMGIA(<u>MaNV, MaDA</u>, SoGioLamViec)" },
+            { q: "Cho lược đồ quan hệ R(A, B, C, D, E, G) và tập phụ thuộc hàm F = {AB → C, C → A, BC → D, ACD → B, D → EG, BE → C, CG → BD, CE → AG}.<br><strong>Yêu cầu:</strong><br>a) Tìm bao đóng của tập thuộc tính (BD)+.<br>b) Tìm một khóa của R.", a: "<strong>a) Tìm bao đóng (BD)+:</strong><br>- Khởi tạo: X = {B, D}<br>- Từ D → EG, ta có X = {B, D, E, G}<br>- Từ BE → C, ta có X = {B, C, D, E, G}<br>- Từ C → A, ta có X = {A, B, C, D, E, G}<br>- Bao đóng cuối cùng của (BD)+ là {A, B, C, D, E, G}.<br><br><strong>b) Tìm một khóa của R:</strong><br>- Xét (BD)+ = {A, B, C, D, E, G} (là toàn bộ thuộc tính của R). Vậy {B, D} là một siêu khóa.<br>- Xét (B)+ = {B} và (D)+ = {D, E, G}. Không có tập con nào của {B, D} là siêu khóa.<br>- Vậy <strong>{B, D}</strong> là một khóa của R." },
+            { q: "Xét quan hệ R(MaSach, TenSach, TheLoai, MaTG, TenTG, NamXB) với tập phụ thuộc hàm F = {MaSach → TenSach, TheLoai, MaTG, NamXB; MaTG → TenTG}.<br><strong>Yêu cầu:</strong><br>a) Tìm tất cả các khóa của R.<br>b) Quan hệ R đang ở dạng chuẩn nào? Tại sao?<br>c) Chuẩn hóa R về dạng chuẩn 3NF.", a: "<strong>a) Tìm khóa:</strong><br>- Bao đóng (MaSach)+ = {MaSach, TenSach, TheLoai, MaTG, NamXB, TenTG}. Do đó, <strong>{MaSach}</strong> là một khóa của R.<br><br><strong>b) Dạng chuẩn:</strong><br>- Khóa là {MaSach}.<br>- Có phụ thuộc hàm bắc cầu: MaSach → MaTG và MaTG → TenTG. Thuộc tính không khóa (TenTG) phụ thuộc vào thuộc tính không khóa khác (MaTG).<br>- Vậy, quan hệ R chỉ đạt <strong>dạng chuẩn 2NF</strong>, vi phạm 3NF.<br><br><strong>c) Chuẩn hóa về 3NF:</strong><br>- Tách phụ thuộc hàm bắc cầu ra bảng riêng:<br>  + R1(<u>MaTG</u>, TenTG)<br>  + R2(<u>MaSach</u>, TenSach, TheLoai, MaTG, NamXB)" },
+            { q: "Thiết kế CSDL cho việc quản lý mượn sách ở thư viện:<br>- Mỗi độc giả có thể mượn nhiều cuốn sách. Mỗi cuốn sách có thể được nhiều độc giả mượn (vào các thời điểm khác nhau).<br>- Thông tin cần quản lý: ĐỘC GIẢ (Mã, Tên, Địa chỉ), SÁCH (Mã, Tên, Tác giả), PHIẾU MƯỢN (Ngày mượn, Ngày trả).<br><strong>Yêu cầu:</strong><br>a) Vẽ sơ đồ ERD.<br>b) Chuyển sang mô hình quan hệ.", a: "<strong>a) Mô hình ERD:</strong><br>- Mối quan hệ N-M giữa ĐỘC GIẢ và SÁCH, tên mối quan hệ là MƯỢN. Mối quan hệ MƯỢN có các thuộc tính Ngày mượn, Ngày trả.<br><br><strong>b) Mô hình quan hệ:</strong><br>- ĐỘC_GIẢ(<u>MaDG</u>, TenDG, DiaChi)<br>- SÁCH(<u>MaSach</u>, TenSach, TacGia)<br>- MƯỢN(<u>MaDG, MaSach, NgayMuon</u>, NgayTra)" },
+            { q: "Hãy trình bày khái niệm về khóa chính trong mô hình dữ liệu quan hệ.", a: "Khóa chính là thuộc tính hoặc tập thuộc tính dùng để xác định duy nhất một bản ghi trong bảng." },
+            { q: "Phân biệt giữa khóa chính và khóa ngoại trong cơ sở dữ liệu.", a: "Khóa chính xác định bản ghi duy nhất, còn khóa ngoại liên kết dữ liệu giữa các bảng." },
+            { q: "Nêu vai trò của ràng buộc toàn vẹn trong việc đảm bảo tính nhất quán dữ liệu.", a: "Các ràng buộc giúp dữ liệu luôn đúng, hợp lý và bảo toàn mối quan hệ giữa các bảng." },
+            { q: "Giải thích ý nghĩa của index khi thiết kế cơ sở dữ liệu.", a: "Index giúp tăng tốc độ tìm kiếm và giảm thời gian quét toàn bộ bảng dữ liệu." },
+            { q: "Cho ví dụ về một quan hệ 1-n trong hệ thống quản lý sinh viên.", a: "Một lớp học có nhiều sinh viên, nên quan hệ giữa LOP và SINHVIEN là 1-n." },
+            { q: "Hãy mô tả quá trình chuẩn hóa dữ liệu trong một hệ thống bán hàng.", a: "Chuẩn hóa giúp loại bỏ dư thừa dữ liệu và giảm sự lặp lại thông tin." },
+            { q: "Trình bày các bước để chuyển đổi mô hình ER sang mô hình quan hệ.", a: "Ta chuyển mỗi thực thể thành bảng và mỗi quan hệ thành khóa hoặc bảng trung gian." },
+            { q: "Nêu các loại phụ thuộc hàm thường gặp trong thiết kế cơ sở dữ liệu.", a: "Có phụ thuộc hàm đầy đủ, phụ thuộc hàm một phần và phụ thuộc hàm bắc cầu." },
+            { q: "Đánh giá tại sao cần có view trong hệ thống thông tin doanh nghiệp.", a: "View giúp người dùng xem dữ liệu theo cách thuận tiện mà không cần thay đổi dữ liệu gốc." },
+            { q: "Hãy phân biệt giữa bảng và view trong SQL.", a: "Bảng lưu dữ liệu thật, còn view là một khung nhìn ảo trên dữ liệu." },
+            { q: "Giải thích ý nghĩa của trigger trong xử lý dữ liệu.", a: "Trigger tự động thực hiện một hành động khi xảy ra một sự kiện trên bảng." },
+            { q: "Mô tả vai trò của giao dịch trong quản lý dữ liệu.", a: "Giao dịch đảm bảo các thao tác được thực hiện đồng bộ và an toàn." },
+            { q: "So sánh giữa bảng tạm và bảng chính trong SQL.", a: "Bảng tạm có thể tồn tại ngắn hạn, còn bảng chính dùng lâu dài." },
+            { q: "Hãy nêu cách xác định thuộc tính nào nên trở thành khóa chính.", a: "Thuộc tính dùng để nhận diện duy nhất nên là khóa chính." },
+            { q: "Cho ví dụ về việc dùng khóa ngoại để liên kết hai bảng trong hệ thống bán hàng.", a: "Khóa ngoại ở bảng ChiTietHoaDon tham chiếu đến HoaDon và SanPham." },
+            { q: "Phân biệt giữa thực thể, thuộc tính và quan hệ trong mô hình ER.", a: "Thực thể là đối tượng, thuộc tính mô tả đặc điểm, quan hệ biểu diễn mối liên kết giữa các thực thể." },
+            { q: "Giải thích vì sao cần chuẩn hóa dữ liệu trước khi đưa vào hệ thống.", a: "Chuẩn hóa giúp giảm dư thừa dữ liệu, tránh cập nhật bất nhất và cải thiện hiệu quả lưu trữ." },
+            { q: "Nêu ý nghĩa của mô hình EER trong thiết kế cơ sở dữ liệu.", a: "Mô hình EER mở rộng mô hình ER để biểu diễn các kiểu quan hệ phức tạp hơn như thừa kế." },
+            { q: "Hãy nêu ưu điểm của mô hình dữ liệu quan hệ so với mô hình phân cấp.", a: "Mô hình quan hệ linh hoạt hơn, dễ truy vấn và dễ bảo trì hơn." },
+            { q: "Mô tả sự khác nhau giữa khóa candidate và khóa chính.", a: "Khóa candidate là các khóa có thể dùng để xác định bản ghi, trong khi khóa chính là khóa được chọn để dùng chính thức." },
+            { q: "Giải thích ý nghĩa của việc phân quyền truy cập dữ liệu.", a: "Phân quyền giúp bảo vệ dữ liệu và kiểm soát người dùng được phép thao tác dữ liệu nào." },
+            { q: "Nêu vai trò của backup và recovery trong quản trị cơ sở dữ liệu.", a: "Backup và recovery giúp khôi phục dữ liệu khi xảy ra lỗi hoặc mất mát dữ liệu." },
+            { q: "So sánh giữa stored procedure và function trong MySQL.", a: "Stored procedure thực hiện nhiều thao tác, còn function thường trả về giá trị và dùng trong biểu thức." },
+            { q: "Hãy trình bày cách xác định khóa của một quan hệ trong mô hình quan hệ.", a: "Khóa được xác định bằng cách tìm tập thuộc tính có khả năng nhận diện duy nhất bản ghi." },
+            { q: "Mô tả ý nghĩa của transaction isolation level.", a: "Isolation level điều chỉnh mức độ riêng tư và tương tranh giữa các giao dịch đang chạy đồng thời." },
+            { q: "Giải thích vì sao index không nên dùng cho quá nhiều cột.", a: "Index quá nhiều làm tăng chi phí cập nhật và giảm hiệu suất chèn sửa xóa dữ liệu." },
+            { q: "Nêu vai trò của kiểm tra ràng buộc dữ liệu ở tầng ứng dụng và tầng cơ sở dữ liệu.", a: "Hai tầng cùng hỗ trợ bảo đảm dữ liệu hợp lệ và nhất quán." },
+            { q: "Hãy so sánh giữa INNER JOIN và OUTER JOIN.", a: "INNER JOIN chỉ lấy dòng khớp nhau, còn OUTER JOIN giữ cả dòng không khớp từ một phía." }
+        ];
 
+        // MẢNG TRẮC NGHIỆM (35 CÂU)
+        const mcqRaw = [
+            { q: "Điều kiện nào là tiên quyết để Union 2 bảng A và B?", options: ["Hai bảng có chung một cột thuộc tính", "Không cần điều kiện", "Hai bảng giống nhau về số cột thuộc tính", "Hai bảng có chung khóa chính."], a: "Hai bảng giống nhau về số cột thuộc tính" },
+            { q: "Một cơ sở dữ liệu là một tập hợp", options: ["Các trường", "Các bản ghi", "Các bảng", "Các khóa"], a: "Các bảng" },
+            { q: "Lược đồ nào dưới đây định nghĩa một khung nhìn hoặc các khung nhìn của một cơ sở dữ liệu cho một người dùng cụ thể?", options: ["Lược đồ trong", "Lược đồ khái niệm", "Lược đồ vật lý", "Lược đồ ngoài"], a: "Lược đồ ngoài" },
+            { q: "Câu lệnh sau trả về tên của cột thuộc tính là gì?<br><code>Select (CSDL*2) as Tong FROM MonHoc</code>", options: ["CSDL", "CSDL*2", "Tong", "(CSDL*2) as Tong"], a: "Tong" },
+            { q: "Đáp án nào có thể xem như là một bảng trong MySQL?", options: ["Function", "Stored Procedure", "View"], a: "View" },
+            { q: "Câu lệnh Inner Join của bảng A với bảng B có ý nghĩa gì?", options: ["Đưa ra phần chung giữa 2 bảng dữ liệu A và B", "Lấy tất cả dữ liệu của bảng A và một phần (hoặc toàn phần) bảng B", "Lấy tất cả dữ liệu của bảng B và một phần (hoặc toàn phần) bảng A", "Lất tất cả dữ liệu của hai bảng A và B."], a: "Đưa ra phần chung giữa 2 bảng dữ liệu A và B" },
+            { q: "Subquery xuất hiện ở sau FROM thì trả về, chọn đáp án đúng nhất?", options: ["Một thuộc tính", "Một trường dữ liệu", "Một bảng"], a: "Một bảng" },
+            { q: "Câu lệnh sau trả về kết quả gì ?<br><code>Select * FROM SinhVien WHERE SinhVien.Ho LIKE ‘N%G’;</code>", options: ["Trả về bảng với cột SinhVien.Ho là có giá trị chỉ là N%G", "Trả về bảng với cột SinhVien.Ho là có giá trị chỉ có ký tự N và G", "Trả về bảng với cột SinhVien.Ho là có giá trị bắt đầu bằng chữ N và kết thúc là chữ G."], a: "Trả về bảng với cột SinhVien.Ho là có giá trị bắt đầu bằng chữ N và kết thúc là chữ G." },
+            { q: "Để thêm một bản ghi vào một bảng, dùng câu lệnh với từ khoá nào?", options: ["Add", "Update", "Insert"], a: "Insert" },
+            { q: "Mệnh đề nào dùng để gộp nhóm các bản ghi có cùng giá trị tại một hay nhiều cột, thành một tập hợp?", options: ["Order by", "Having", "Group by"], a: "Group by" },
+            { q: "View, Trigger, hay Stored Procedure có thể xuất hiện trong câu lệnh Select của MySQL?", options: ["Trigger", "Stored Procedure", "View"], a: "View" },
+            { q: "Từ khoá nào dùng để xác định khoá chính của thuộc tính trong bảng của MYSQL?", options: ["Foreign key", "Main key", "Primary key"], a: "Primary key" },
+            { q: "Trong SQL, câu lệnh nào dùng để lấy dữ liệu từ bảng?", options: ["SELECT", "INSERT", "UPDATE", "DELETE"], a: "SELECT" },
+            { q: "Mệnh đề nào dùng để lọc dòng dữ liệu sau khi nhóm?", options: ["WHERE", "HAVING", "GROUP BY", "ORDER BY"], a: "HAVING" },
+            { q: "Để sắp xếp kết quả, ta dùng mệnh đề nào?", options: ["ORDER BY", "GROUP BY", "WHERE", "DISTINCT"], a: "ORDER BY" },
+            { q: "Câu lệnh nào dùng để loại bỏ trùng lặp trong kết quả?", options: ["UNION", "DISTINCT", "ALL", "JOIN"], a: "DISTINCT" },
+            { q: "Khóa ngoại thường được dùng để làm gì?", options: ["Tạo chỉ mục", "Liên kết dữ liệu giữa các bảng", "Xóa dữ liệu", "Chèn dữ liệu"], a: "Liên kết dữ liệu giữa các bảng" },
+            { q: "Trong MySQL, câu lệnh nào dùng để thêm bản ghi mới?", options: ["UPDATE", "INSERT", "DELETE", "ALTER"], a: "INSERT" },
+            { q: "Trong SQL, kết quả của LEFT JOIN là gì?", options: ["Chỉ các dòng chung", "Tất cả dòng của bảng trái và các dòng khớp với bảng phải", "Chỉ các dòng của bảng phải", "Không có kết quả"], a: "Tất cả dòng của bảng trái và các dòng khớp với bảng phải" },
+            { q: "Mệnh đề nào dùng để giới hạn số hàng trả về?", options: ["LIMIT", "TOP", "OFFSET", "FETCH"], a: "LIMIT" },
+            { q: "Câu lệnh nào dùng để thay đổi cấu trúc bảng?", options: ["ALTER TABLE", "UPDATE", "CREATE TABLE", "SELECT"], a: "ALTER TABLE" },
+            { q: "Khóa chính dùng để làm gì?", options: ["Xác định bản ghi duy nhất", "Tạo chỉ mục tự động", "Xóa dữ liệu", "Chia nhóm dữ liệu"], a: "Xác định bản ghi duy nhất" },
+            { q: "Trong SQL, cú pháp nào tạo bảng mới?", options: ["CREATE TABLE", "ALTER TABLE", "DROP TABLE", "INSERT INTO"], a: "CREATE TABLE" },
+            { q: "Câu lệnh nào dùng để xóa dữ liệu khỏi bảng?", options: ["DELETE", "DROP", "TRUNCATE", "REMOVE"], a: "DELETE" },
+            { q: "Một view là gì?", options: ["Bảng lưu trữ dữ liệu thật", "Câu hỏi SQL", "Khung nhìn ảo dựa trên một truy vấn", "Trigger"], a: "Khung nhìn ảo dựa trên một truy vấn" },
+            { q: "Từ khóa nào dùng để kiểm tra điều kiện trước khi cập nhật?", options: ["WHERE", "HAVING", "CASE", "WHEN"], a: "WHERE" },
+            { q: "Mệnh đề nào dùng để kết nối hai bảng dựa trên điều kiện?", options: ["ON", "WHERE", "JOIN", "FROM"], a: "ON" },
+            { q: "Để thêm một cột mới vào bảng, ta dùng lệnh nào?", options: ["ALTER TABLE", "UPDATE", "CREATE TABLE", "SELECT"], a: "ALTER TABLE" },
+            { q: "Trong SQL, mệnh đề nào dùng để lọc dữ liệu trước khi nhóm?", options: ["WHERE", "HAVING", "GROUP BY", "ORDER BY"], a: "WHERE" },
+            { q: "Câu lệnh nào dùng để đổi tên bảng?", options: ["RENAME TABLE", "ALTER TABLE", "UPDATE", "DROP TABLE"], a: "RENAME TABLE" },
+            { q: "Một trigger thường được gắn với sự kiện nào?", options: ["INSERT", "SELECT", "UPDATE", "DELETE"], a: "INSERT" },
+            { q: "Trong SQL, câu lệnh nào dùng để xóa bảng?", options: ["DROP TABLE", "DELETE", "TRUNCATE", "REMOVE"], a: "DROP TABLE" },
+            { q: "Câu lệnh nào cho phép lấy dữ liệu từ nhiều bảng bằng điều kiện khớp nhau?", options: ["JOIN", "GROUP BY", "WHERE", "LIMIT"], a: "JOIN" },
+            { q: "Mệnh đề nào dùng để gán bí danh cho cột hoặc bảng?", options: ["AS", "ON", "WHERE", "JOIN"], a: "AS" },
+            { q: "Trong SQL, câu lệnh nào dùng để đặt lại giá trị cho cột?", options: ["UPDATE", "INSERT", "ALTER", "DELETE"], a: "UPDATE" }
+        ];
 
-<h2><b>My Favorite Movies</b></h2>
-<p><i>(I actially dont watch too many movies, so...here goes!)</i></p>
-<ol><li>The last 30 minutes of Forrest Gump
-<a href="https://www.imdb.com/" target="_blank">(IMDB)</a>
-</li>
+        // MẢNG TỰ LUẬN SQL (33 CÂU)
+        const sqlItems = [
+            { q: "Viết câu lệnh tạo một cơ sở dữ liệu với tên là: DataMining", a: "<code>CREATE DATABASE DataMining;</code>" },
+            { q: "Viết câu lệnh xoá bảng với tên là: CSDL", a: "<code>DROP TABLE CSDL;</code>" },
+            { q: "Sự giống nhau và khác nhau của 2 câu lệnh sau?<br><code>SELECT Ten FROM SinhVien Where Ten like ‘_NH’ ;</code><br><code>SELECT Ten FROM SinhVien Where Ten like ‘%NH’ ;</code>", a: "<strong>Giống nhau:</strong> Đều lọc các tên có đuôi kết thúc là 'NH'.<br><strong>Khác nhau:</strong> <code>_NH</code> yêu cầu có chính xác 1 ký tự bất kỳ đứng trước chữ 'NH' (chuỗi dài đúng 3 ký tự). <code>%NH</code> cho phép có 0 hoặc nhiều ký tự bất kỳ đứng trước chữ 'NH'." },
+            { q: "Hai bảng Temp_SinhVien1 và Temp_SinhVien2 giống và khác nhau ở điểm nào?<br><code>Create table temp_Sinhvien1 like SinhVien;</code><br><code>Create table temp_Sinhvien2 as (Select * from SinhVien);</code>", a: "<strong>Giống nhau:</strong> Đều tạo ra bảng mới có cấu trúc các cột tương tự bảng SinhVien.<br><strong>Khác nhau:</strong> Bảng 1 tạo bằng lệnh <code>LIKE</code> chỉ sao chép cấu trúc (bảng rỗng). Bảng 2 tạo bằng <code>AS SELECT</code> sao chép cả cấu trúc và toàn bộ dữ liệu từ bảng gốc." },
+            { q: "Tại sao nên tạo chỉ mục (index) cho cơ sở dữ liệu chủ yếu cho việc truy xuất?", a: "Việc tạo chỉ mục (Index) giúp hệ quản trị CSDL tìm kiếm và truy xuất dữ liệu nhanh hơn rất nhiều, giảm bớt thời gian quét toàn bộ bảng dữ liệu (tương tự như việc tra cứu mục lục trong một cuốn sách)." },
+            { q: "Câu lệnh sau trả về kết quả gì ?<br><code>DELETE FROM SinhVien WHERE MaSV = 123456789;</code>", a: "Xóa bản ghi của sinh viên có mã sinh viên (MaSV) là 123456789 ra khỏi bảng SinhVien." },
+            { q: "Bảng DonHang có một số trường dữ liệu, bao gồm cả cột TrangThai, câu lệnh sau có thực thi không? Nếu có, hãy mô tả kết quả.<br><code>select trangthai, count(trangthai) from DonHang group by trangthai order by trangthai;</code>", a: "<strong>Có thực thi.</strong> Kết quả trả về danh sách các nhóm trạng thái đơn hàng và số lượng đơn hàng tương ứng với mỗi trạng thái. Dữ liệu được sắp xếp tăng dần theo tên trạng thái." },
+            { q: "Cho một Trigger <code>BEFORE INSERT</code> có điều kiện <code>IF NEW.diem < 5 THEN SIGNAL SQLSTATE '50001'...</code>. Vậy điều gì xảy ra, khi dùng câu lệnh thêm một dòng dữ liệu với thuộc tính Diem là 100 vào bảng DiemThi.", a: "<strong>Dòng dữ liệu sẽ được thêm thành công vào bảng.</strong> Lý do: Trigger chỉ ngăn chặn việc chèn dữ liệu nếu điểm nhỏ hơn 5 (báo lỗi). Với giá trị Diem = 100, điều kiện IF trả về sai nên trigger không kích hoạt lỗi, giao dịch INSERT vẫn diễn ra bình thường." },
+            { q: "Viết câu lệnh để tạo bảng SinhVien với ít nhất 3 cột.", a: "<code>CREATE TABLE SinhVien (id INT PRIMARY KEY, ten VARCHAR(50), diem INT);</code>" },
+            { q: "Viết câu lệnh để chèn một bản ghi vào bảng MonHoc.", a: "<code>INSERT INTO MonHoc VALUES (1, 'CSDL', 3);</code>" },
+            { q: "Viết câu lệnh để cập nhật dữ liệu trong bảng SinhVien.", a: "<code>UPDATE SinhVien SET diem = 8 WHERE id = 1;</code>" },
+            { q: "Viết câu lệnh để xóa bản ghi có id = 1 khỏi bảng MonHoc.", a: "<code>DELETE FROM MonHoc WHERE id = 1;</code>" },
+            { q: "Viết câu lệnh để chọn tất cả dữ liệu từ bảng SinhVien.", a: "<code>SELECT * FROM SinhVien;</code>" },
+            { q: "Viết câu lệnh để lấy 5 bản ghi đầu tiên từ bảng MonHoc.", a: "<code>SELECT * FROM MonHoc LIMIT 5;</code>" },
+            { q: "Viết câu lệnh để đếm số bản ghi trong bảng SinhVien.", a: "<code>SELECT COUNT(*) FROM SinhVien;</code>" },
+            { q: "Viết câu lệnh để sắp xếp dữ liệu từ bảng MonHoc theo tên.", a: "<code>SELECT * FROM MonHoc ORDER BY ten;</code>" },
+            { q: "Viết câu lệnh để lọc các dòng có điểm >= 8 trong bảng SinhVien.", a: "<code>SELECT * FROM SinhVien WHERE diem >= 8;</code>" },
+            { q: "Viết câu lệnh để nhóm dữ liệu theo cột ten trong bảng MonHoc.", a: "<code>SELECT ten, COUNT(*) FROM MonHoc GROUP BY ten;</code>" },
+            { q: "Viết câu lệnh để nối bảng SinhVien với bảng Diem bằng INNER JOIN.", a: "<code>SELECT * FROM SinhVien INNER JOIN Diem ON SinhVien.id = Diem.id;</code>" },
+            { q: "Viết câu lệnh để tạo view từ bảng MonHoc.", a: "<code>CREATE VIEW v_MonHoc AS SELECT * FROM MonHoc;</code>" },
+            { q: "Viết câu lệnh để tạo chỉ mục trên cột ten của bảng SinhVien.", a: "<code>CREATE INDEX idx_SinhVien_ten ON SinhVien(ten);</code>" },
+            { q: "Viết câu lệnh để đổi tên bảng MonHoc thành MonHoc_new.", a: "<code>RENAME TABLE MonHoc TO MonHoc_new;</code>" },
+            { q: "Viết câu lệnh để xóa bảng SinhVien.", a: "<code>DROP TABLE SinhVien;</code>" },
+            { q: "Viết câu lệnh để thêm cột gioiTinh vào bảng SinhVien.", a: "<code>ALTER TABLE SinhVien ADD gioiTinh VARCHAR(10);</code>" },
+            { q: "Viết câu lệnh để thay đổi kiểu dữ liệu của cột diem sang DECIMAL(4,2).", a: "<code>ALTER TABLE SinhVien MODIFY diem DECIMAL(4,2);</code>" },
+            { q: "Viết câu lệnh để chọn sinh viên có điểm từ 7 đến 9.", a: "<code>SELECT * FROM SinhVien WHERE diem BETWEEN 7 AND 9;</code>" },
+            { q: "Viết câu lệnh để tìm sinh viên có tên bắt đầu bằng 'A'.", a: "<code>SELECT * FROM SinhVien WHERE ten LIKE 'A%';</code>" },
+            { q: "Viết câu lệnh để đếm số sinh viên theo giới tính.", a: "<code>SELECT gioiTinh, COUNT(*) FROM SinhVien GROUP BY gioiTinh;</code>" },
+            { q: "Viết câu lệnh để tạo ràng buộc khóa ngoại giữa bảng Diem và SinhVien.", a: "<code>ALTER TABLE Diem ADD CONSTRAINT fk_diem_sv FOREIGN KEY (id) REFERENCES SinhVien(id);</code>" },
+            { q: "Viết câu lệnh để tạo trigger kiểm tra điểm trước khi chèn dữ liệu.", a: "<code>CREATE TRIGGER check_diem BEFORE INSERT ON SinhVien FOR EACH ROW SET NEW.diem = IF(NEW.diem < 0, 0, NEW.diem);</code>" },
+            { q: "Viết câu lệnh để bắt đầu một giao dịch.", a: "<code>START TRANSACTION;</code>" },
+            { q: "Viết câu lệnh để ghi nhận thay đổi và kết thúc giao dịch.", a: "<code>COMMIT;</code>" },
+            { q: "Viết câu lệnh để hủy bỏ giao dịch.", a: "<code>ROLLBACK;</code>" }
+        ];
 
-<li>Star Trek Episode V with Zazu
-    <a href="https://www.imdb.com/" target="_blank">(IMDB)</a>
-    </li>
+        // Format lại MCQ để chèn A,B,C,D vào HTML
+        const mcqFormatted = mcqRaw.map(item => {
+            const labels = ['A', 'B', 'C', 'D'];
+            let optionsHtml = '<ul class="options-list">';
+            item.options.forEach((opt, idx) => {
+                optionsHtml += `<li><strong>${labels[idx]}.</strong> ${opt}</li>`;
+            });
+            optionsHtml += '</ul>';
+            
+            return {
+                q: `<div style="margin-bottom:10px;"><strong>[Trắc nghiệm]</strong> ${item.q}</div>${optionsHtml}`,
+                a: `Đáp án đúng:<br><br><span style="color:#d9534f; font-weight:bold; font-size:22px;">${item.a}</span>`
+            };
+        });
 
+        // Gộp mảng MCQ và SQL thành mảng Thực Hành
+        const practiceItems = [...mcqFormatted, ...sqlItems];
 
-    <li>Fight Club (not really, but i've seen like 3 movies total so this is my 3rd fave by technicality) 
-        <a href="https://www.imdb.com/" target="_blank">(IMDB)</a>
-        </li>
+        const db = {
+            theory: theoryItems,
+            practice: practiceItems
+        };
 
-</ol>
+        // Biến trạng thái
+        let currentCategory = 'theory';
+        let currentDeck = [];
+        let currentIndex = 0;
+        let isFlipped = false;
 
-<h2><b>My Moods</b></h2>
-<div style="display: flex ; gap: 50px;">
-<div><p>Ronaldo no goals</p>
-    <img src="https://pbs.twimg.com/media/FsU7SXVWIAEEI-V.png" alt="RONALDO SIUUU"  style="width: 380px;height:450px ;" >
-</div>
+        // Hàm xáo trộn mảng
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
-<div><p>Messi hattrick </p><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxdF9gP2uTDgCNuNrPGqHbpm6llY5PP1i1AwXdwDJOiC-EF5Tjrdq1RHM&s=10" alt="PESSI" style="width: 380px;height:450px  ">
-</div>
-</div>
+        // Lật thẻ
+        function flipCard() {
+            const card = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            if(isFlipped) {
+                card.classList.add('is-flipped');
+            } else {
+                card.classList.remove('is-flipped');
+            }
+        }
 
-<h2><b>Fun Facts About My Neughbors</b></h2>
-<ul><li>Sue Smith: <i>Effervescent</i> is a word that describes her. </li>
-<li>Bill Thompson: Loves playing Yu-Gi-Oh</li></ul>
+        // Render nội dung
+        function renderCard() {
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('is-flipped');
 
-    </main>
-  
- 
+            const frontEl = document.getElementById('card-front');
+            const backEl = document.getElementById('card-back');
+            const progressEl = document.getElementById('progress');
 
+            frontEl.innerHTML = currentDeck[currentIndex].q;
+            backEl.innerHTML = currentDeck[currentIndex].a;
+            
+            progressEl.innerText = `${currentIndex + 1} / ${currentDeck.length}`;
+        }
 
-    <footer>
-<img src="https://img.upanh.moe/dwFCMn0K/Capture.png" alt="">
-    </footer>
+        // Chuyển tab
+        function switchCategory(category) {
+            currentCategory = category;
+            
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Không tự động xáo trộn khi chuyển tab, giữ nguyên thứ tự ban đầu
+            currentDeck = [...db[category]];
+            currentIndex = 0;
+            renderCard();
+        }
+
+        // Câu tiếp theo
+        function nextCard() {
+            currentIndex++;
+            if (currentIndex >= currentDeck.length) {
+                // Hết vòng thì quay lại câu 1, không tự động xáo trộn
+                currentIndex = 0; 
+            }
+            renderCard();
+        }
+
+        // Câu trước đó
+        function prevCard() {
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = currentDeck.length - 1; 
+            }
+            renderCard();
+        }
+        
+        // Nút bấm xáo trộn thủ công
+        function randomizeDeck() {
+            currentDeck = shuffleArray(currentDeck);
+            currentIndex = 0;
+            renderCard();
+            // Đổi màu chớp nháy nhẹ để người dùng biết đã xáo trộn thành công
+            const btn = document.querySelector('.btn-random');
+            const originalText = btn.innerText;
+            btn.innerText = "✓ Đã trộn!";
+            btn.style.backgroundColor = "#4caf50";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "#ff9800";
+            }, 1000);
+        }
+
+        // Khởi tạo
+        window.onload = () => {
+            currentDeck = [...db.theory];
+            renderCard();
+        };
+
+    </script>
 </body>
 </html>
